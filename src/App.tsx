@@ -12,18 +12,34 @@ import { HistoryPage } from '@/pages/HistoryPage';
 import { SettingsPage } from '@/pages/SettingsPage';
 import { UsersPage } from '@/pages/UsersPage';
 import { LoginPage } from '@/pages/LoginPage';
+import { ReservationsPage } from '@/pages/ReservationsPage';
+import { GuestsPage } from '@/pages/GuestsPage';
+import { PropertiesPage } from '@/pages/PropertiesPage';
+import { RoomsPage } from '@/pages/RoomsPage';
+import { CouncilCasesPage } from '@/pages/CouncilCasesPage';
+import { AccountsPage } from '@/pages/AccountsPage';
+import { TasksPage } from '@/pages/TasksPage';
+import { ReportsPage } from '@/pages/ReportsPage';
 import type { RestoreState, DocumentHistoryEntry, DocType } from '@/lib/types';
 import { Loader2, RefreshCw, Menu } from 'lucide-react';
 
 const PAGE_TITLES: Record<TabId, { title: string; desc: string }> = {
-  dashboard: { title: 'Dashboard',         desc: 'Revenue overview, booking insights, and recent activity' },
-  invoice:   { title: 'Invoice',          desc: 'Select a guest and bookings to generate a professional invoice PDF' },
-  statement: { title: 'Receipt',          desc: 'Generate a full booking receipt for any date range' },
-  council:   { title: 'Council Letter',   desc: 'Draft an official letter to accompany a receipt or invoice' },
-  combined:  { title: 'Combined Package', desc: 'Download an invoice or receipt together with a council letter' },
-  history:   { title: 'Document History', desc: 'All documents generated through this system' },
-  users:     { title: 'User Management',  desc: 'Add, edit, and remove users with role-based access' },
-  settings:  { title: 'Settings',         desc: 'Configure your data source and application preferences' },
+  dashboard:      { title: 'Dashboard',         desc: "Today's operations, financials, alerts, and KPIs" },
+  reservations:   { title: 'Reservations',      desc: 'Manage bookings, check-ins, and check-outs' },
+  guests:         { title: 'Guests',             desc: 'Guest profiles, history, and room movements' },
+  properties:     { title: 'Properties',         desc: 'Manage hotels and accommodation types' },
+  rooms:          { title: 'Rooms',              desc: 'Unit status, housekeeping, and maintenance' },
+  council_cases:  { title: 'Council Cases',      desc: 'Council-funded guests, funding, and extensions' },
+  accounts:       { title: 'Accounts',            desc: 'Invoices, payments, and outstanding balances' },
+  tasks:          { title: 'Tasks',               desc: 'Follow-ups, reminders, and action items' },
+  reports:        { title: 'Reports',             desc: 'Management, occupancy, and financial reports' },
+  invoice:        { title: 'Invoice',             desc: 'Generate a professional invoice PDF' },
+  statement:      { title: 'Receipt',             desc: 'Generate a full booking receipt' },
+  council:        { title: 'Council Letter',      desc: 'Draft an official council letter' },
+  combined:       { title: 'Combined Package',    desc: 'Invoice or receipt with council letter' },
+  history:        { title: 'Document History',    desc: 'All documents generated through this system' },
+  users:          { title: 'User Management',     desc: 'Add, edit, and remove users with role-based access' },
+  settings:       { title: 'Settings',            desc: 'Configure properties, sources, and preferences' },
 };
 
 const DOC_TYPE_TO_TAB: Record<DocType, TabId> = {
@@ -100,9 +116,21 @@ function Content({ active, restore, onRestored, onReopen, isAdmin, onNavigate }:
     );
   }
 
-  if (active === 'dashboard') return <DashboardPage onNavigate={onNavigate} />;
+  // PMS pages that don't depend on Google Sheets loading
+  if (active === 'reservations') return <ReservationsPage onNavigate={onNavigate} />;
+  if (active === 'guests') return <GuestsPage onNavigate={onNavigate} />;
+  if (active === 'properties') return <PropertiesPage />;
+  if (active === 'rooms') return <RoomsPage />;
+  if (active === 'council_cases') return <CouncilCasesPage onNavigate={onNavigate} />;
+  if (active === 'accounts') return <AccountsPage onNavigate={onNavigate} />;
+  if (active === 'tasks') return <TasksPage />;
+  if (active === 'reports') return <ReportsPage />;
   if (active === 'settings') return <SettingsPage />;
   if (active === 'users') return <UsersPage />;
+
+  // Legacy document pages that need Google Sheets data
+  if (active === 'dashboard') return <DashboardPage onNavigate={onNavigate} />;
+  if (active === 'history') return <HistoryPage onReopen={onReopen} isAdmin={isAdmin} />;
 
   if (loading) {
     return (
@@ -117,12 +145,10 @@ function Content({ active, restore, onRestored, onReopen, isAdmin, onNavigate }:
   }
 
   switch (active) {
-    case 'dashboard': return <DashboardPage onNavigate={onNavigate} />;
     case 'invoice':   return <InvoicePage restore={restore} onRestored={onRestored} />;
     case 'statement': return <StatementPage restore={restore} onRestored={onRestored} />;
     case 'council':   return <CouncilPage restore={restore} onRestored={onRestored} />;
     case 'combined':  return <CombinedPage restore={restore} onRestored={onRestored} />;
-    case 'history':   return <HistoryPage onReopen={onReopen} isAdmin={isAdmin} />;
     default:          return null;
   }
 }

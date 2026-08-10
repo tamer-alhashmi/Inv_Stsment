@@ -1,19 +1,49 @@
-import { Building2, Receipt, FileText, Mail, Layers, Clock, Settings, RefreshCw, AlertCircle, Users, X, LogOut, Shield, LayoutDashboard } from 'lucide-react';
+import {
+  Building2, LayoutDashboard, CalendarDays, Users, Hotel, BedDouble,
+  Landmark, PoundSterling, CheckSquare, BarChart3, FileText,
+  Settings, RefreshCw, AlertCircle, X, LogOut, Shield, Mail, Clock, Layers,
+} from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { useAuth } from '@/context/AuthContext';
 
-export type TabId = 'dashboard' | 'invoice' | 'statement' | 'council' | 'combined' | 'history' | 'users' | 'settings';
+export type TabId =
+  | 'dashboard' | 'reservations' | 'guests' | 'properties' | 'rooms'
+  | 'council_cases' | 'accounts' | 'tasks' | 'reports'
+  | 'invoice' | 'statement' | 'council' | 'combined' | 'history'
+  | 'users' | 'settings';
 
-const NAV_ITEMS: { id: TabId; label: string; icon: typeof Receipt; sub: string; adminOnly?: boolean }[] = [
-  { id: 'dashboard', label: 'Dashboard',       icon: LayoutDashboard, sub: 'Overview & analytics' },
-  { id: 'invoice',   label: 'Invoice',        icon: Receipt,   sub: 'Create invoice PDF' },
-  { id: 'statement', label: 'Receipt',         icon: FileText,  sub: 'Booking receipt'    },
-  { id: 'council',   label: 'Council Letter',  icon: Mail,      sub: 'Official letter'    },
-  { id: 'combined',  label: 'Combined',        icon: Layers,    sub: 'All-in-one package' },
-  { id: 'history',   label: 'History',         icon: Clock,     sub: 'Past documents'     },
-  { id: 'users',     label: 'User Management', icon: Users,     sub: 'Manage users',       adminOnly: true },
-  { id: 'settings',  label: 'Settings',        icon: Settings,  sub: 'Data source & config', adminOnly: true },
+interface NavItem {
+  id: TabId;
+  label: string;
+  icon: typeof LayoutDashboard;
+  sub: string;
+  adminOnly?: boolean;
+  group?: string;
+}
+
+const NAV_ITEMS: NavItem[] = [
+  { id: 'dashboard',    label: 'Dashboard',       icon: LayoutDashboard, sub: "Today's operations & KPIs", group: 'Operations' },
+  { id: 'reservations', label: 'Reservations',    icon: CalendarDays,   sub: 'Bookings, check-in/out',     group: 'Operations' },
+  { id: 'guests',       label: 'Guests',           icon: Users,          sub: 'Profiles & history',         group: 'Operations' },
+  { id: 'properties',  label: 'Properties',        icon: Hotel,          sub: 'Hotels & units',             group: 'Operations' },
+  { id: 'rooms',        label: 'Rooms',             icon: BedDouble,      sub: 'Unit status & housekeeping', group: 'Operations' },
+
+  { id: 'council_cases', label: 'Council Cases',   icon: Landmark,       sub: 'Funding & extensions',       group: 'Council' },
+
+  { id: 'accounts',     label: 'Accounts',          icon: PoundSterling,  sub: 'Invoices & payments',       group: 'Finance' },
+  { id: 'tasks',        label: 'Tasks',             icon: CheckSquare,    sub: 'Follow-ups & actions',       group: 'Finance' },
+  { id: 'reports',      label: 'Reports',            icon: BarChart3,      sub: 'Management & financial',    group: 'Finance' },
+
+  { id: 'invoice',      label: 'Invoice',            icon: FileText,       sub: 'Create invoice PDF',        group: 'Documents' },
+  { id: 'statement',    label: 'Receipt',            icon: FileText,       sub: 'Booking receipt',           group: 'Documents' },
+  { id: 'council',      label: 'Council Letter',     icon: Mail,           sub: 'Official letter',           group: 'Documents' },
+  { id: 'combined',     label: 'Combined',           icon: Layers,         sub: 'All-in-one package',        group: 'Documents' },
+  { id: 'history',      label: 'History',            icon: Clock,          sub: 'Past documents',           group: 'Documents' },
+
+  { id: 'users',        label: 'User Management',    icon: Users,           sub: 'Manage users',              adminOnly: true,  group: 'Admin' },
+  { id: 'settings',     label: 'Settings',           icon: Settings,       sub: 'Configuration',             adminOnly: true,  group: 'Admin' },
 ];
+
 
 export function Sidebar({
   active,
@@ -30,9 +60,17 @@ export function Sidebar({
   const { user, signOut } = useAuth();
   const visibleItems = NAV_ITEMS.filter(item => !item.adminOnly || user?.role === 'admin');
 
+  // Group items
+  const groups: { [key: string]: NavItem[] } = {};
+  for (const item of visibleItems) {
+    const g = item.group || 'Other';
+    if (!groups[g]) groups[g] = [];
+    groups[g].push(item);
+  }
+  const groupOrder = ['Operations', 'Council', 'Finance', 'Documents', 'Admin'];
+
   return (
     <>
-      {/* Mobile overlay */}
       {mobileOpen && (
         <div className="fixed inset-0 z-40 bg-gray-900/50 backdrop-blur-sm lg:hidden" onClick={onCloseMobile} />
       )}
@@ -43,51 +81,53 @@ export function Sidebar({
         transition-transform duration-300 ease-in-out
         ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
-        {/* Brand + close */}
-        <div className="px-6 pt-7 pb-6 flex items-start justify-between">
+        {/* Brand */}
+        <div className="px-6 pt-7 pb-5 flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shrink-0">
-              <Building2 size={16} />
+            <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center shrink-0">
+              <Building2 size={18} />
             </div>
             <div>
-              <p className="font-bold text-sm tracking-tight leading-tight">InvoiceHub</p>
-              <p className="text-gray-400 text-[11px]">Finance team</p>
+              <p className="font-bold text-sm tracking-tight leading-tight">PMS Hub</p>
+              <p className="text-gray-400 text-[11px]">Hotel Management</p>
             </div>
           </div>
-          <button
-            onClick={onCloseMobile}
-            className="lg:hidden text-gray-400 hover:text-white p-1 -mr-1"
-          >
+          <button onClick={onCloseMobile} className="lg:hidden text-gray-400 hover:text-white p-1 -mr-1">
             <X size={18} />
           </button>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto">
-          {visibleItems.map(({ id, label, icon: Icon, sub, adminOnly }) => {
-            const active_ = active === id;
+        <nav className="flex-1 px-3 overflow-y-auto pb-2">
+          {groupOrder.map(groupName => {
+            const items = groups[groupName];
+            if (!items) return null;
             return (
-              <div key={id}>
-                {adminOnly && id === visibleItems.find(i => i.adminOnly)?.id && (
-                  <div className="my-2 mx-3 border-t border-gray-800/60" />
-                )}
-                <button
-                  onClick={() => { onSelect(id); onCloseMobile(); }}
-                  className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-left transition-all duration-150 group ${
-                    active_
-                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
-                      : 'text-gray-400 hover:bg-gray-800 hover:text-white'
-                  }`}
-                >
-                  <Icon size={18} className={active_ ? 'text-white' : 'text-gray-500 group-hover:text-gray-300'} />
-                  <div className="min-w-0 flex-1">
-                    <p className={`text-sm font-medium leading-tight ${active_ ? 'text-white' : ''}`}>{label}</p>
-                    <p className={`text-[11px] leading-tight mt-0.5 ${active_ ? 'text-blue-200' : 'text-gray-600 group-hover:text-gray-500'}`}>{sub}</p>
-                  </div>
-                  {adminOnly && (
-                    <Shield size={13} className={active_ ? 'text-blue-200' : 'text-gray-600'} />
-                  )}
-                </button>
+              <div key={groupName}>
+                <p className="px-3.5 pt-4 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-600">{groupName}</p>
+                <div className="space-y-0.5">
+                  {items.map(({ id, label, icon: Icon, sub, adminOnly }) => {
+                    const active_ = active === id;
+                    return (
+                      <button
+                        key={id}
+                        onClick={() => { onSelect(id); onCloseMobile(); }}
+                        className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left transition-all duration-150 group ${
+                          active_
+                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
+                            : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                        }`}
+                      >
+                        <Icon size={17} className={active_ ? 'text-white' : 'text-gray-500 group-hover:text-gray-300'} />
+                        <div className="min-w-0 flex-1">
+                          <p className={`text-sm font-medium leading-tight ${active_ ? 'text-white' : ''}`}>{label}</p>
+                          <p className={`text-[11px] leading-tight mt-0.5 ${active_ ? 'text-blue-200' : 'text-gray-600 group-hover:text-gray-500'}`}>{sub}</p>
+                        </div>
+                        {adminOnly && <Shield size={13} className={active_ ? 'text-blue-200' : 'text-gray-600'} />}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             );
           })}
@@ -118,7 +158,6 @@ export function Sidebar({
             </button>
           </div>
 
-          {/* User info + logout */}
           {user && (
             <div className="px-3 pt-2 border-t border-gray-800/60">
               <div className="flex items-center gap-2.5 mb-2">
