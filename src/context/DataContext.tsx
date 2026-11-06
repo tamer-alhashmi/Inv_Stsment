@@ -1,6 +1,7 @@
 import { useState, useEffect, createContext, useContext, type ReactNode } from 'react';
 import { fetchBookings, fetchHotelDetails } from '@/lib/sheets';
 import { getSettings } from '@/lib/db';
+import { syncSheetToDatabase } from '@/lib/sync';
 import type { Booking, HotelDetails, AppSettings } from '@/lib/types';
 
 interface DataContextType {
@@ -41,6 +42,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setBookings(b);
       setHotels(h);
       setLastUpdated(new Date());
+
+      // Auto-sync sheet data to database so Operations pages have data
+      syncSheetToDatabase(config).catch(err => {
+        console.error('Auto-sync to database failed:', err);
+      });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load data');
     } finally {

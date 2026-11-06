@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import type { HotelDetails, Booking } from '@/lib/types';
-import { formatDate, getPayerName, getPaymentMethod, isCouncilPaid, isPaid, calcUnpaidTotals, calcTotals, formatCurrency, calcVatBreakdown, hasHotelVat } from '@/lib/sheets';
+import { formatDate, toDateMillis, getPayerName, getPaymentMethod, isCouncilPaid, isPaid, calcUnpaidTotals, calcTotals, formatCurrency, calcVatBreakdown, hasHotelVat } from '@/lib/sheets';
 
 const A4_WIDTH = 794;
 
@@ -60,8 +60,8 @@ export function CouncilLetterDocument({
   const paymentSummary = useMemo(() => {
     if (!bookings || bookings.length === 0) return null;
     const sorted = [...bookings].sort((a, b) => {
-      const da = new Date(a.checkIn || a.date || 0).getTime();
-      const db = new Date(b.checkIn || b.date || 0).getTime();
+      const da = toDateMillis(a.checkIn || a.date);
+      const db = toDateMillis(b.checkIn || b.date);
       return da - db;
     });
     const groups: { period: string; entries: { text: string; unpaid: boolean }[] }[] = [];

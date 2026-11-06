@@ -11,7 +11,7 @@ import { saveCouncilLetter, logDocument, getCouncilLetter } from '@/lib/db';
 import { useAuth } from '@/context/AuthContext';
 import { Download, Layers, CheckCircle2, Loader2, FileText, Mail, Receipt, User, Hash, ChevronUp, ChevronDown, Send, AlertCircle, Lock } from 'lucide-react';
 import type { CouncilLetter, Booking, RestoreState } from '@/lib/types';
-import { isPaid } from '@/lib/sheets';
+import { isPaid, toDateMillis } from '@/lib/sheets';
 
 type DocChoice = 'invoice' | 'statement';
 type Mode = 'guest' | 'refs';
@@ -84,8 +84,8 @@ export function CombinedPage({ restore, onRestored }: { restore?: RestoreState |
   const selectedBookings = guestBookings.filter(b => selectedRefs.has(b.bookingNumber));
 
   const sortedBookings = [...selectedBookings].sort((a, b) => {
-    const da = new Date(a.checkIn || a.date || 0).getTime();
-    const db = new Date(b.checkIn || b.date || 0).getTime();
+    const da = toDateMillis(a.checkIn || a.date);
+    const db = toDateMillis(b.checkIn || b.date);
     return da - db;
   });
   const unpaidBookings = selectedBookings.filter(b => !isPaid(b));

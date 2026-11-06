@@ -159,9 +159,34 @@ export function formatCurrency(val: number | string): string {
 
 export function formatDate(dateStr: string): string {
   if (!dateStr) return '';
+  const iso = toDateISO(dateStr);
+  if (iso) {
+    const d = new Date(iso + 'T00:00:00');
+    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return dateStr;
   return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+export function toDateISO(dateStr: string): string | null {
+  if (!dateStr) return null;
+  const m = dateStr.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (m) {
+    const day = m[1].padStart(2, '0');
+    const month = m[2].padStart(2, '0');
+    const year = m[3];
+    return `${year}-${month}-${day}`;
+  }
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return null;
+  return d.toISOString().slice(0, 10);
+}
+
+export function toDateMillis(dateStr: string): number {
+  const iso = toDateISO(dateStr);
+  if (!iso) return 0;
+  return new Date(iso + 'T00:00:00').getTime();
 }
 
 const COUNCIL_KEYWORDS = ['council pay', 'council', 'torbay council', 'council pay.'];

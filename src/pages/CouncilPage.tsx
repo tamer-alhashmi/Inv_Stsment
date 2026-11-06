@@ -8,6 +8,7 @@ import { saveCouncilLetter, listCouncilLetters, deleteCouncilLetter, logDocument
 import { useAuth } from '@/context/AuthContext';
 import { Download, Save, Trash2, Mail, CheckCircle2, Loader2, FileText, ChevronDown, ChevronUp, Search, User, Building2 } from 'lucide-react';
 import type { CouncilLetter, Booking, RestoreState } from '@/lib/types';
+import { toDateMillis } from '@/lib/sheets';
 
 const EMPTY_LETTER: CouncilLetter = {
   councilName: '', councilAddress: '', councilReference: '',
@@ -79,8 +80,8 @@ export function CouncilPage({ restore, onRestored }: { restore?: RestoreState | 
   const hotelDetails = getHotelDetails(hotels, selectedHotel, guestBookings[0]?.hotelName || '');
 
   const sortedBookings = [...guestBookings].sort((a, b) => {
-    const da = new Date(a.checkIn || a.date || 0).getTime();
-    const db = new Date(b.checkIn || b.date || 0).getTime();
+    const da = toDateMillis(a.checkIn || a.date);
+    const db = toDateMillis(b.checkIn || b.date);
     return da - db;
   });
   const stayPeriodStart = sortedBookings[0] ? sortedBookings[0].checkIn || sortedBookings[0].date : '';

@@ -3,7 +3,7 @@ import { useData } from '@/context/DataContext';
 import { useAuth } from '@/context/AuthContext';
 import { listDocumentHistory } from '@/lib/db';
 import { useLoadingBar } from '@/components/LoadingBar';
-import { calcTotals, calcUnpaidTotals, formatCurrency, isPaid, getUniqueGuests, getUniqueHotels } from '@/lib/sheets';
+import { calcTotals, calcUnpaidTotals, formatCurrency, isPaid, getUniqueGuests, getUniqueHotels, toDateMillis } from '@/lib/sheets';
 import type { Booking, DocumentHistoryEntry, DocType } from '@/lib/types';
 import {
   TrendingUp, AlertCircle, CalendarCheck, Users, Receipt, FileText, Mail,
@@ -28,8 +28,9 @@ const PRESETS: { id: DatePreset; label: string }[] = [
 function getBookingDate(b: Booking): Date | null {
   const raw = b.checkIn || b.date;
   if (!raw) return null;
-  const d = new Date(raw);
-  return isNaN(d.getTime()) ? null : d;
+  const millis = toDateMillis(raw);
+  if (!millis) return null;
+  return new Date(millis);
 }
 
 function presetToRange(preset: DatePreset): { from: string; to: string } {

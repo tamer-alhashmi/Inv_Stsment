@@ -1,5 +1,5 @@
 import type { Booking, HotelDetails } from '@/lib/types';
-import { formatCurrency, formatDate, calcTotals, calcUnpaidTotals, getPaymentMethod, isPaid, calcVatBreakdown, hasHotelVat } from '@/lib/sheets';
+import { formatCurrency, formatDate, toDateMillis, calcTotals, calcUnpaidTotals, getPaymentMethod, isPaid, calcVatBreakdown, hasHotelVat } from '@/lib/sheets';
 
 const A4_WIDTH = 794;
 
@@ -23,8 +23,8 @@ export function StatementDocument({
   const today = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
 
   const sorted = [...bookings].sort((a, b) => {
-    const da = new Date(a.checkIn || a.date || 0).getTime();
-    const db = new Date(b.checkIn || b.date || 0).getTime();
+    const da = toDateMillis(a.checkIn || a.date);
+    const db = toDateMillis(b.checkIn || b.date);
     return da - db;
   });
 
